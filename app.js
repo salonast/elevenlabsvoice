@@ -1,4 +1,5 @@
 require('dotenv').config()
+console.log('ELEVENLABS_API_KEY is set to:', process.env.ELEVENLABS_API_KEY)
 const express = require('express')
 const axios = require('axios')
 const app = express()
@@ -59,7 +60,11 @@ app.post('/synthesize', async (req, res) => {
     const audioDataURI = `data:audio/mpeg;base64,${base64Audio}`
     res.send({ audioDataURI })
   } catch (error) {
-    console.error(error)
+    if (error.response) {
+        console.error('Error:', error.response.status, error.response.statusText)
+    } else {
+        console.error('Error:', error.message)
+    }
     res.status(500).send('Error occurred while processing the request.')
   }
 })
