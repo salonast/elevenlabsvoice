@@ -1,18 +1,31 @@
-require('dotenv').config()
-const express = require('express')
-const axios = require('axios')
-const app = express()
-const port = process.env.PORT || 3000
-app.use(express.urlencoded({ extended: true }))
-app.use(express.json())
+require('dotenv').config();
+const express = require('express');
+const axios = require('axios');
+const app = express();
+const port = process.env.PORT || 3000;
+
+// Add this to your environment variables
+const YOUR_VF_11_API_KEY = process.env.YOUR_VF_11_API_KEY;
+
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 app.use((error, req, res, next) => {
   if (error instanceof SyntaxError && error.status === 400 && 'body' in error) {
-    console.error(error)
-    return res.status(400).send({ message: 'Malformed JSON in payload' })
+    console.error(error);
+    return res.status(400).send({ message: 'Malformed JSON in payload' });
   }
-  next()
-})
+  next();
+});
+
+// API Key Middleware
+app.use((req, res, next) => {
+  const apiKey = req.headers['x-api-key'];
+  if (!apiKey || apiKey !== YOUR_VF_11_API_KEY) {
+    return res.status(401).send({ error: 'Unauthorized' });
+  }
+  next();
+});
 
 app.post('/synthesize', async (req, res) => {
   let text = req.body.text || null
@@ -34,15 +47,15 @@ app.post('/synthesize', async (req, res) => {
 
   const voice =
     req.body.voice == 0
-      ? '21m00Tcm4TlvDq8ikWAM'
-      : req.body.voice || '21m00Tcm4TlvDq8ikWAM'
+      ? 'U0Ijd7wTncAfWZ7cof7f'
+      : req.body.voice || 'U0Ijd7wTncAfWZ7cof7f'
 
   const model = req.body.model || 'eleven_multilingual_v2'
 
   const voice_settings =
     req.body.voice_settings == 0
       ? {
-          stability: 0.75,
+          stability: 0.50,
           similarity_boost: 0.75,
         }
       : req.body.voice_settings || {
@@ -79,5 +92,5 @@ app.post('/synthesize', async (req, res) => {
 })
 
 app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`)
-})
+  console.log(`Server is running at http://localhost:${port}`);
+});
